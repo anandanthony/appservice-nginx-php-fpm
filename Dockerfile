@@ -8,6 +8,21 @@ ENV php_vars /usr/local/etc/php/conf.d/docker-vars.ini
 ENV NGINX_VERSION 1.13.3-1~stretch
 ENV NJS_VERSION   1.13.3.0.1.11-1~stretch
 
+# ========
+# ENV vars
+# ========
+#
+ENV DOCKER_BUILD_HOME "/dockerbuild"
+# drupal 
+ENV DRUPAL_SOURCE "/usr/src/drupal" 
+ENV DRUPAL_HOME "/home/site/wwwroot"
+# mariadb
+ENV MARIADB_DATA_DIR "/home/data/mysql"
+ENV MARIADB_LOG_DIR "/home/LogFiles/mysql"
+# phpmyadmin
+ENV PHPMYADMIN_SOURCE "/usr/src/phpmyadmin"
+ENV PHPMYADMIN_HOME "/home/phpmyadmin"
+
 RUN apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y gnupg1 \
 	&& \
@@ -75,6 +90,27 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
         -e "s/listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm.sock/g" \
         -e "s/^;clear_env = no$/clear_env = no/" \
         ${fpm_conf}
+	
+# ====================
+# Download and Install
+# ~. essentials
+# 1. Drupal
+# ====================
+
+RUN mkdir -p $DOCKER_BUILD_HOME
+WORKDIR $DOCKER_BUILD_HOME
+
+# -------------
+# 1. Drupal
+# -------------
+RUN  mkdir -p $DRUPAL_SOURCE 
+COPY drupal.tar.gz $DRUPAL_SOURCE/
+
+# =========
+# Configure
+# =========
+WORKDIR $DRUPAL_HOME
+RUN rm -rf $DOCKER_BUILD_HOME	
 
 RUN chmod 755 /bin/init_container.sh
   
